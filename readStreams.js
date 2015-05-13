@@ -22,10 +22,10 @@ var   fs                        = require('fs') // for interacting with file sys
  */
 function runStreams() {
 
-	readStream = fs.createReadStream(files[fileCount -1], { encoding: 'utf8', autoClose: true }) // open stream to read our file
+	readStream = fs.createReadStream(files[fileCount -1], { encoding: 'utf8', autoClose: true }); // open stream to read our file
 
 	// if error on read, print to console
-	readStream.on('error', function(error) { throw error; })
+	readStream.on('error', function(error) { throw error; });
 
 	// on data chunk split into sentences, check if three words, sanitize remainder, add to hash
 	readStream.on('data', function(chunk) {
@@ -40,15 +40,31 @@ function runStreams() {
 				sentenceMap[validSentence] ? sentenceMap[validSentence] ++ : sentenceMap[validSentence] = 1; // add our valid sentence to our sentence hash table, setting the value to 1. If we have a match don't add to table, but add one to the existing value.
 			}
 		}
-	})
+	});
 
-	// on data end print result
+	// on data end print result if last file, else runStreams again
 	readStream.on('end', function() {
-		if (fileCount === files.length) {
-			console.log(threeWordSentences);
-			console.log(sentenceMap);
-		} else { fileCount ++; runStreams(); }
-	})
+		var sentenceMapSort;
+		if (fileCount === files.length) { // if we've run through all our files...
+
+			sentenceMapSort = []; // count vals from sentenceMap
+
+			for ( var key in sentenceMap ) { // loop through sentenceMap keys and push the val (count) to sentenceMapVals array
+				sentenceMapSort.push([key, sentenceMap[key]]); // push key:val
+			}
+
+			sentenceMapSort.sort(function(a,b){ return b[1] - a[1] }); // sort count in descending order (highest first)
+
+			//console.log(threeWordSentences); // for testing
+			//console.log(sentenceMap); // for testing
+			//console.log(sentenceMapSort); // for testing
+
+			for ( var i = 0; i < 100 && sentenceMapSort[i]; i++ ) { // log in desired format up to 100 top three word sentences
+				console.log( sentenceMapSort[i][1] + " - " + sentenceMapSort[i][0] );
+			}
+		
+		} else { fileCount ++; runStreams(); } // if more files runStreams again on next file
+	});
 }
 
 

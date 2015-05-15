@@ -1,0 +1,21 @@
+{
+  "name": "sethshober-coding-challenge",
+  "version": "0.0.1",
+  "description": "Takes in flat files and prints out the top 100 three word sentences with count.",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samg/sethshober-coding-challenge"
+  },
+  "author": "Seth Shober",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samg/sethshober-coding-challenge/issues"
+  },
+  "homepage": "https://github.com/samg/sethshober-coding-challenge"
+}

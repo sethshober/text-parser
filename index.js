@@ -1,1 +1,1 @@
-require('./readStreams').runStreams();
+require('./readStreams').readFiles();

@@ -10,17 +10,18 @@
 
 var   fs                        = require('fs') // for interacting with file system
 	, files                     = process.argv.slice(2, process.argv.length) // array of files passed in via command line
-	, fileCount                 = 1 // counter stream loop in runStreams
+	, fileCount                 = 1 // counter stream loop in readFiles
 	, threeWordSentences        = [] // for testing comparison of sentenceMap values
 	, sentenceMap               = {} // mapping sentences to count
-	, punctuationAndLineReturns = /(\r\n|\n|\r|\?|\!|\.|\,|\;|\:|\-|\–|\_|\"|\'|\,|\[|\]|\{|\}|\(|\)|\.\.\.)/gm // the things we don't want (punctuation and line breaks). there are 14 types of punctuation in the English language btw.
+	, punctuation               = /(\?|\!|\.|\,|\;|\:|\_|\"|\'|\,|\[|\]|\{|\}|\(|\)|\.\.\.)/gm // the things we don't want (punctuation and line breaks). there are 14 types of punctuation in the English language btw. kept hyphens |\-|\–| because a hyphenated word is one word.
+	, lineEndings               = /(\r\n|\n|\r)/gm
 	, droppedSentence           = ""; // store dropped sentence from data chunk
 
 
 /**
- * opens a read stream for each file from process.argv. outputs the 100 most common three letter sentences.
+ * opens a read stream for each file from process.argv.
  */
-function runStreams() {
+function readFiles() {
 
 	var file = fs.createReadStream(files[fileCount -1], { encoding: 'utf8', autoClose: true }); // open stream to read our file
 
@@ -29,41 +30,41 @@ function runStreams() {
 
 	// on data chunk split into sentences, check if three words, sanitize remainder, add to hash
 	file.on('data', function(chunk) {
-		var   sentences, validSentence;
+		var   sentence
+		    , sentences
+		    , validSentence;
+
 		chunk = droppedSentence + chunk; // prepend data chunk with droppedSentence item
 		sentences = chunk.split(/(\.|\!|\?)\s/); // split on sentence ends of ./?/! plus space to find sentences. I'm sure there are edge cases to this.
 		droppedSentence = sentences.pop(); // since inevitably we will end in the middle of a sentence, drop that and save it to be prepended to the next chunk.
-		for ( var i = 0; i < sentences.length; i++ ) { // for each sentence check if word count is 3
-			if ( sentences[i].split(" ").length === 3 ) {
-				validSentence = sentences[i].replace(punctuationAndLineReturns,"").toLowerCase(); // remove what we don't want and make it lower case, since we are case insensitve
+		
+		for ( var i = 0; i < sentences.length; i++ ) { // check each sentence
+			sentence = sentences[i].replace(lineEndings, " ").replace(/\s\s/, "").trim(); // replace line endings with a space to avoid joining two words together. remove double spaces which was causing two words with two spaces in between to count as a sentence. remove extra white space.
+			if ( sentence.split(" ").length === 3 ) { // if sentence is three words
+				validSentence = sentence.replace(punctuation,"").toLowerCase(); // remove what we don't want and make it lower case, since we are case insensitve
 				threeWordSentences.push(validSentence); // push to array our acceptable three word sentence
 				sentenceMap[validSentence] ? sentenceMap[validSentence] ++ : sentenceMap[validSentence] = 1; // add our valid sentence to our sentence hash table, setting the value to 1. If we have a match don't add to table, but add one to the existing value.
 			}
 		}
 	});
 
-	// on data end print result if last file, else runStreams again
+	// on data end print result if last file, else readFiles again
 	file.on('end', function() {
 		var sentenceMapSort;
-		if (fileCount === files.length) { // if we've run through all our files...
+		if ( fileCount === files.length ) { // if we've run through all our files...
 			sentenceMapSort = []; // count vals from sentenceMap
 			for ( var key in sentenceMap ) { // loop through sentenceMap keys and push the val (count) to sentenceMapVals array
-				sentenceMapSort.push([key, sentenceMap[key]]); // push key:val
+				sentenceMapSort.push( [key, sentenceMap[key]] ); // push key:val
 			}
-			sentenceMapSort.sort(function(a,b){ return b[1] - a[1]; }); // sort count in descending order (highest first)
-			//console.log(threeWordSentences); // for testing
-			//console.log(sentenceMap); // for testing
-			//console.log(sentenceMapSort); // for testing
+			sentenceMapSort.sort( function(a,b){ return b[1] - a[1]; } ); // sort count in descending order (highest first)
 			for ( var i = 0; i < 100 && sentenceMapSort[i]; i++ ) { // log in desired format up to 100 top three word sentences
 				console.log( sentenceMapSort[i][1] + " - " + sentenceMapSort[i][0] );
 			}
-		} else { fileCount ++; runStreams(); } // if more files runStreams again on next file
+		} else { fileCount ++; readFiles(); } // if more files readFiles again on next file
 	});
 }
 
 
-module.exports.runStreams = runStreams;
-
-
+module.exports.readFiles = readFiles;
 
 

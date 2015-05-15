@@ -9,7 +9,7 @@
 	// We now have a count of all three word sentences and do a sort and display to the output.
 
 var   fs                        = require('fs') // for interacting with file system
-	, files                     = process.argv.slice(2, process.argv.length) // array of files passed in via command line
+	, files                     // array of files passed in via command line
 	, fileCount                 = 1 // counter stream loop in readFiles
 	, threeWordSentences        = [] // for testing comparison of sentenceMap values
 	, sentenceMap               = {} // mapping sentences to count
@@ -65,6 +65,36 @@ function readFiles() {
 }
 
 
-module.exports.readFiles = readFiles;
+/**
+ * if -r flag is indicated return the files from the folder
+ */
+function readFolder() {
+	fs.readdir(process.argv[3], function(err, dirFiles) {
+		var dir = process.argv[3].replace('/', '') + '/';
+		if (err) { throw err; }
+		else {
+			for ( var i = 0; i < dirFiles.length; i ++ ) {
+				dirFiles[i] = dir.concat(dirFiles[i]);
+			}
+			files = dirFiles;
+			readFiles();
+		}
+	})
+}
+
+
+/**
+ * checks for -r flag which indicates a folder is being passed and recursive file reading is desired
+ */
+function checkFlag() {
+	if ( process.argv[2] === "-r" ) { readFolder(); }
+	else { 
+		files = process.argv.slice(2, process.argv.length);
+		readFiles();
+	}
+}
+
+
+module.exports.checkFlag = checkFlag;
 
 

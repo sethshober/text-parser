@@ -9,7 +9,7 @@
 	// We now have a count of all three word sentences and do a sort and display to the output.
 
 var   fs                        = require('fs') // for interacting with file system
-	, files                     // array of files passed in via command line
+	, files                     = [] // array of files passed in via command line
 	, fileCount                 = 1 // counter stream loop in readFiles
 	, threeWordSentences        = [] // for testing comparison of sentenceMap values
 	, sentenceMap               = {} // mapping sentences to count
@@ -51,6 +51,7 @@ function readFiles() {
 	// on data end print result if last file, else readFiles again
 	file.on('end', function() {
 		var sentenceMapSort;
+		
 		if ( fileCount === files.length ) { // if we've run through all our files...
 			sentenceMapSort = []; // count vals from sentenceMap
 			for ( var key in sentenceMap ) { // loop through sentenceMap keys and push the val (count) to sentenceMapVals array
@@ -70,13 +71,15 @@ function readFiles() {
  */
 function readFolder() {
 	fs.readdir(process.argv[3], function(err, dirFiles) {
-		var dir = process.argv[3].replace('/', '') + '/';
+		var dir = process.argv[3].replace('/', '') + '/'; // remove trailing slashes and add trailing slash for consistency
+
 		if (err) { throw err; }
 		else {
-			for ( var i = 0; i < dirFiles.length; i ++ ) {
-				dirFiles[i] = dir.concat(dirFiles[i]);
+			for ( var i = 0; i < dirFiles.length; i ++ ) { 
+				if ( dirFiles[i].slice(-3) === 'txt' ) { // if file in folder is .txt extension
+					files.push( dir.concat(dirFiles[i]) ); // add to validFiles to be read
+				}
 			}
-			files = dirFiles;
 			readFiles();
 		}
 	})
@@ -87,14 +90,29 @@ function readFolder() {
  * checks for -r flag which indicates a folder is being passed and recursive file reading is desired
  */
 function checkFlag() {
-	if ( process.argv[2] === "-r" ) { readFolder(); }
+	if ( process.argv[2] === "-r" ) { return true; }
+	else { return false; }
+}
+
+
+/**
+* check flag and read file/folder respectively
+*/
+function init() {
+	var filesInput = process.argv.slice(2, process.argv.length);
+	
+	if ( checkFlag() ) { readFolder(); } // if -r present read the folder passed in for files
 	else { 
-		files = process.argv.slice(2, process.argv.length);
+		for ( var i = 0; i < filesInput.length; i++) {
+			if ( filesInput[i].slice(-3) === 'txt' ) {
+				files.push(filesInput[i]); // add files with .txt extension to list which will be read
+			}
+		}
 		readFiles();
 	}
 }
 
 
-module.exports.checkFlag = checkFlag;
+module.exports.init = init;
 
 

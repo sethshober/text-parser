@@ -1,1 +1,1 @@
-require('./readStreams').checkFlag();
+require('./readStreams').init();

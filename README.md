@@ -1,5 +1,4 @@
-# sethshober-coding-challenge
-New Relic Coding Challenge
+# text-parser
 
 Command line utility to take in flat files and print out the top 100 three word sentences with count, ignoring punctuation, line endings, and being case insensitive.
 

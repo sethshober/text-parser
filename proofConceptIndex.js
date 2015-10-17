@@ -1,0 +1,1 @@
+require('./proofConcept')(process.argv[2])

@@ -16,9 +16,9 @@ function parseText(data) {
 
   function removeEmptyValues(arr) {
     // of iterates over values
-    for (var i of arr) i && temp.push(i); // copy each non-empty value to the 'temp' array
-    arr = temp;
-    delete temp; // discard the variable
+    for (var i of arr) i && temp.push(i) // copy each non-empty value to the 'temp' array
+    arr = temp
+    delete temp // discard the variable
     return arr
   }
 

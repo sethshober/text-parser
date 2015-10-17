@@ -28,7 +28,8 @@ function parseText(data) {
   // some issues with correct counts. need to remove commas
   // missing beginning of string. Hi, is gone??
   function sequencer(index) {
-    var sequence = (words[i] + " " + words[i + 1] + " " + words[i + 2]).toLowerCase()
+    var sequence = (words[index] + " " + words[index + 1] + " " + words[index + 2]).toLowerCase()
+    // if exists add to count, else create in table
     wordTable[sequence] ? wordTable[sequence] ++ : wordTable[sequence] = 1
   }
 

@@ -1,1 +1,1 @@
-require('./readStreams').init();
+require('./parseText')(process.argv[2])

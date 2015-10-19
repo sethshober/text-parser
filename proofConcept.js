@@ -55,15 +55,11 @@ function parseText(data) {
     , words
     , wordTable = {}
     , sequences
-    , i = 0
 
   data = normalizeText(data)
   words = getWords(data)
   words = removeEmptyValues(words)
-  while (i < words.length) {
-    sequencer(i)
-    i++
-  }
+  for ( var i = 0; i < words.length; i++) sequencer(i)
   sequences = sortTable(wordTable)
   logSequences(sequences)
 }

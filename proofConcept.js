@@ -1,67 +1,97 @@
-var fs = require('fs') 
-  //, str         = "Hi, how are you? I am fine. \r How are you? \nI am ok.\r\nHow are you?"
+var fs          = require('fs') 
+  , punctuation = /(\?|\!|\.|\,|\;|\:|\_|\"|\'|\,|\[|\]|\{|\}|\(|\)|\.\.\.)/gm
+  , lineEndings = /(\r\n|\n|\r|\s\s)/gm
+  , words
+  , wordTable   = {}
+ // , str       = "Hi, how are you? I am fine. \r How are you? \nI am ok.\r\nHow are you?" // for testing
 
-function parseText(data) {
-
-  function normalizeText(text) {
+/**
+ * Removes punctuation and line endings from text.
+ * @param {string} text - The data returned from a text file.
+ * @return {string} The normalized text.
+ */
+function normalizeText(text) {
     text = text.replace(punctuation, "")
     text = text.replace(lineEndings, " ")
     return text
   }
 
-  function getWords(text){
-    text = text.split(" ")
-    return text
-  }
+/**
+ * Splits string on spaces to create array of words.
+ * @param {string} text - normalized text
+ * @return {array} The words from the text.
+ */
+function getWords(text){
+  text = text.split(" ")
+  return text
+}
 
-  // fun ES6 way to remove empty values from array
-  function removeEmptyValues(arr) {
-    var temp = []
-    // of iterates over values
-    // copy each non-empty value to the 'temp' array
-    for (var i of arr) i && temp.push(i) 
-    arr = temp
-    delete temp // discard the variable
-    return arr
-  }
+/**
+ * Fun ES6 way to remove empty values from array
+ * @param {array} arr - our words array
+ * @return {array} The words array with empty space values removed.
+ */
+function removeEmptyValues(arr) {
+  var temp = []
+  // of iterates over values
+  // copy each non-empty value to the 'temp' array
+  for (var i of arr) i && temp.push(i) 
+  arr = temp
+  delete temp // discard the variable
+  return arr
+}
 
+/**
+ * Creates a hash table for three word sequences with count.
+ * @param {number} index - index number for iteration
+ */
+function sequencer(index) {
   // some issues with correct counts. need to remove commas
   // missing beginning of string. Hi, is gone??
-  function sequencer(index) {
-    var sequence = (words[index] + " " + words[index + 1] + " " + words[index + 2]).toLowerCase()
-    // if exists add to count, else create in table
-    wordTable[sequence] ? wordTable[sequence] ++ : wordTable[sequence] = 1
+  var sequence = (words[index] + " " + words[index + 1] + " " + words[index + 2]).toLowerCase()
+  // if sequence exists in table add one to count, else add to table
+  wordTable[sequence] ? wordTable[sequence] ++ : wordTable[sequence] = 1
+}
+
+/**
+ * Sorts our words in descending order
+ * @param {object} table - our word sequence hash table
+ * @return {array} Three word sequences in desc order
+ */
+function sortTable(table) {
+  var wordTableSort = []
+  for ( var key in table ) { // loop through map keys
+    wordTableSort.push( [key, table[key]] ); // push key:val
   }
+  wordTableSort.sort( function(a,b) { return b[1] - a[1]; }) // high/low
+  return wordTableSort
+}
 
-  function sortTable(table) {
-    var wordTableSort = []
-    for ( var key in table ) { // loop through map keys
-      wordTableSort.push( [key, table[key]] ); // push key:val
-    }
-    // sort by high/low
-    wordTableSort.sort( function(a,b) { return b[1] - a[1]; })
-    return wordTableSort
+/**
+ * Logs our three word sequences
+ * @param {array} table - index number for iteration
+ * @param {number} [limit] - how many items to log
+ */
+function logSequences(wordArr, limit) {
+  if (!limit) limit = wordArr.length
+  for (var i = 0; i < limit && wordArr[i]; i++) {
+    console.log( wordArr[i][1] + " - " + wordArr[i][0] )
   }
+}
 
-  function logSequences(table) {
-    for ( var i = 0; i < 100 && table[i]; i++ ) { // limit 100
-      console.log( table[i][1] + " - " + table[i][0] )
-    }
-  }
-
-
-  var punctuation = /(\?|\!|\.|\,|\;|\:|\_|\"|\'|\,|\[|\]|\{|\}|\(|\)|\.\.\.)/gm
-    , lineEndings = /(\r\n|\n|\r|\s\s)/gm
-    , words
-    , wordTable = {}
-    , sequences
-
+/**
+ * Parses text from a file to show the top three word sequences.
+ * Ignores line endings and punctuation.
+ * @param {string} data - text from file
+ */
+function parseText(data) {
+  var sequences
   data = normalizeText(data)
   words = getWords(data)
   words = removeEmptyValues(words)
-  for ( var i = 0; i < words.length; i++) sequencer(i)
+  for (var i = 0; i < words.length; i++) sequencer(i)
   sequences = sortTable(wordTable)
-  logSequences(sequences)
+  logSequences(sequences, 100)
 }
 
 module.exports = function readFile(file) {

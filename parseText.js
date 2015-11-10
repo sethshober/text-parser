@@ -37,7 +37,6 @@ function removeEmptyValues(arr) {
   // copy each non-empty value to the 'temp' array
   for (var i of arr) i && temp.push(i) 
   arr = temp
-  delete temp // discard the variable
   return arr
 }
 
@@ -94,11 +93,16 @@ function parseText(data) {
   logSequences(sequences, 100)
 }
 
+// would probably be more efficient to process each chunk as it comes
 module.exports = function readFile(file) {
-  fs.readFile(file, {encoding: 'utf8'}, function(err, data){
-    if (err) throw err
-    parseText(data)
-  })
+  var text = ""
+    , file = fs.createReadStream(file, { encoding: 'utf8', autoClose: true })
+  // error check
+  file.on('error', function(err) { throw err })
+  // build text
+  file.on('data', function(data) { text += data })
+  // do parsing
+  file.on('end', function() { parseText(text) })
 }
 
 
